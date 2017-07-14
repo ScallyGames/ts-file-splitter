@@ -1,17 +1,21 @@
 {
-  "name": "ts-file-splitter",
-  "version": "0.1.0",
-  "description": "Splits a typescript file by function, creating a folder of the same name, an index.ts as barrel and one file per function.",
-  "main": "index.js",
-  "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
-  },
-  "author": "Pascal Blessing",
-  "license": "UNLICENSED",
-  "dependencies": {
-    "byots": "2.5.0-dev.20170712.4.29",
-    "commander": "2.11.0",
-    "lodash.kebabcase": "4.1.1",
-    "typescript": "2.4.1"
-  }
+    "name": "ts-file-splitter",
+    "version": "0.1.0",
+    "description": "Splits a typescript file by function, creating a folder of the same name, an index.ts as barrel and one file per function.",
+    "main": "index.js",
+    "scripts": {
+        "test": "echo \"Error: no test specified\" && exit 1"
+    },
+    "author": "pascal.blessing@gmx.at",
+    "license": "UNLICENSED",
+    "repository": {
+        "type": "git",
+        "url": "git+https://github.com/Aides359/ts-file-splitter.git"
+    },
+    "dependencies": {
+        "byots": "2.5.0-dev.20170712.4.29",
+        "commander": "2.11.0",
+        "lodash.kebabcase": "4.1.1",
+        "typescript": "2.4.1"
+    }
 }
