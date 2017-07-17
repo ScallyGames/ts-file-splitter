@@ -6,8 +6,9 @@
     "scripts": {
         "test": "echo \"Error: no test specified\" && exit 1"
     },
-    "author": "pascal.blessing@gmx.at",
-    "license": "UNLICENSED",
+    "author": "Pascal Blessing <pascal.blessing@gmx.at>",
+    "license": "MIT",
+    "readme": "README.md",
     "repository": {
         "type": "git",
         "url": "git+https://github.com/Aides359/ts-file-splitter.git"
