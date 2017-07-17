@@ -7,7 +7,7 @@ const ts = require('byots');
 
 let fileValue;
 
-const dependencyImports = [];
+const dependencyImports = {};
 const definedFunctions = {};
 const barrelExportDeclarations = [];
 const barrelExportAssignments = [];
@@ -63,15 +63,22 @@ fs.writeFile(
 // write file on fileName/function-name.ts with imports, comment and exported function
 Object.keys(definedFunctions).forEach(functionName => {
     const outsourcedContent =
-        // TODO: only import those that are needed
-        dependencyImports.join('')
+        Object.keys(dependencyImports)
+        // TODO: use a more sophisticated method (check AST for usage)
+        .filter(importedContent => dependencyImports[importedContent].some(func => definedFunctions[functionName].indexOf(func) > 1))
+        .join('')
         // get relative imports one level higher
         .replace(/'\.{2}\//g, `'../../`)
         .replace(/'\.\//g, `'../`) +
         os.EOL +
-        // TODO: only import those that are needed
         // cross-import own files to have all functions available
-        Object.keys(definedFunctions).filter(func => func !== functionName).map(func => `import { ${func} } from './${kebabcase(func)}';`).join(os.EOL) +
+        Object.keys(definedFunctions)
+        .filter(func => func !== functionName)
+        // only those that are used
+        // TODO: use a more sophisticated method (check AST for usage)
+        .filter(func => definedFunctions[functionName].indexOf(func) > -1)
+        .map(func => `import { ${func} } from './${kebabcase(func)}';`)
+        .join(os.EOL) +
         os.EOL +
         definedFunctions[functionName] + os.EOL + os.EOL +
         `export { ${functionName} };` + os.EOL +
@@ -97,13 +104,29 @@ function parseAllChildren(node, depth = 0) {
             case ts.SyntaxKind.FunctionDeclaration:
                 const functionName = node.name.text;
 
-                console.log(ts.formatSyntaxKind(node.kind), functionName, node.pos, node.end);
-
                 definedFunctions[functionName] = nodeContent;
 
                 break;
+                /*
+                TODO: implement logic for variable declarations 
+                case ts.SyntaxKind.VariableDeclaration:
+                    break
+                */
             case ts.SyntaxKind.ImportDeclaration:
-                dependencyImports.push(nodeContent);
+                let importedDeclarations = [];
+                if (node.importClause.name) {
+                    // import * as foobar from 'foobar';
+                    importedDeclarations = [node.importClause.name.text];
+                } else if (node.importClause.namedBindings) {
+                    if (node.importClause.namedBindings.name) {
+                        // import foobar from 'foobar';
+                        importedDeclarations = [node.importClause.namedBindings.name.text];
+                    } else if (node.importClause.namedBindings.elements) {
+                        // import { Foo, Bar} from 'foobar';
+                        importedDeclarations = node.importClause.namedBindings.elements.map(v => v.name.text);
+                    }
+                }
+                dependencyImports[nodeContent] = importedDeclarations;
                 break;
             case ts.SyntaxKind.ExportAssignment:
                 barrelExportAssignments.push(nodeContent);
@@ -112,7 +135,7 @@ function parseAllChildren(node, depth = 0) {
                 barrelExportDeclarations.push(nodeContent);
                 break;
             default:
-                console.warn('Unexpected element: ', ts.formatSyntaxKind(node.kind), ts.content.substring(node.pos, node.end), '. Please check the according code and copy it yourself.');
+                console.warn('Unexpected element: ', ts.formatSyntaxKind(node.kind), nodeContent, '. Please check the according code and copy it yourself.');
                 break;
         }
     } else if (depth > 2) {
